@@ -4,6 +4,12 @@ services:
     api:
         build: ./api-treinamento-node
         container_name: api_service
+        healthcheck:
+            test:
+                ["CMD-SHELL", "curl -f http://localhost:3001/status || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
         ports:
             - "3001:3001"
         volumes:
@@ -25,7 +31,8 @@ services:
             - /app/node_modules
             - /app/.next
         depends_on:
-            - api
+            api:
+                condition: service_healthy
 
     db:
         image: postgres:14-alpine
