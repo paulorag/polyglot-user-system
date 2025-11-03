@@ -1,5 +1,7 @@
 FROM node:18-alpine
 
+RUN apk add curl
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./

@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 
 interface User {
     id: number;
@@ -9,56 +8,31 @@ interface User {
 interface UserItemProps {
     user: User;
     onDelete: (id: number) => void;
-    onUpdate: (id: number, newName: string) => void;
+    onOpenEditModal: (user: User) => void; // <-- Nova prop
 }
 
-export function UserItem({ user, onDelete, onUpdate }: UserItemProps) {
-    const [isEditing, setIsEditing] = useState(false);
-    const [newName, setNewName] = useState(user.nome);
-
-    const handleSave = () => {
-        onUpdate(user.id, newName);
-        setIsEditing(false);
-    };
-
+export function UserItem({ user, onDelete, onOpenEditModal }: UserItemProps) {
     return (
         <li className="flex justify-between items-center text-gray-300 p-2 border-b border-gray-700">
-            {isEditing ? (
-                <input
-                    type="text"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    className="bg-gray-700 text-white rounded  px-2 py-1"
-                />
-            ) : (
-                <span>
-                    {user.nome}(ID: {user.id})
-                </span>
-            )}
-            <div className="flex gap-2">
-                {isEditing ? (
-                    <button
-                        onClick={handleSave}
-                        className="bg-green-500 hover:gb-green-700 text-white font-bold py-1 px-2 rounded text-xs"
-                    >
-                        Salvar
-                    </button>
-                ) : (
-                    <button
-                        onClick={() => setIsEditing(true)}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
-                    >
-                        Editar
-                    </button>
-                )}
-            </div>
+            <span>
+                {user.nome} (ID: {user.id})
+            </span>
 
-            <button
-                onClick={() => onDelete(user.id)}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs"
-            >
-                Deletar
-            </button>
+            <div className="flex gap-2">
+                <button
+                    onClick={() => onOpenEditModal(user)}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
+                >
+                    Editar
+                </button>
+
+                <button
+                    onClick={() => onDelete(user.id)}
+                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs"
+                >
+                    Deletar
+                </button>
+            </div>
         </li>
     );
 }

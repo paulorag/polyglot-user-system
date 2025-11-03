@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { UserItem } from "./UserItem";
 import { AddUserForm } from "./AddUserForm";
+import { EditUserForm } from "./EditUserForm";
 import { Modal } from "./Modal";
 import toast from "react-hot-toast";
 
@@ -16,6 +17,8 @@ export function UserList() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
 
     const fetchUsers = useCallback(async () => {
         setIsLoading(true);
@@ -84,6 +87,8 @@ export function UserList() {
             );
             if (!response.ok) throw new Error("Falha ao atualizar usuário");
             toast.success("Usuário atualizado com sucesso!");
+            setIsEditModalOpen(false);
+            setEditingUser(null);
             fetchUsers();
         } catch (err) {
             const errorMessage =
@@ -121,6 +126,16 @@ export function UserList() {
         }
     };
 
+    const openEditModal = (user: User) => {
+        setEditingUser(user);
+        setIsEditModalOpen(true);
+    };
+
+    const closeEditModal = () => {
+        setIsEditModalOpen(false);
+        setEditingUser(null);
+    };
+
     return (
         <div className="w-full max-w-2xl p-4 bg-gray-800 rounded-lg space-y-4">
             <div className="text-right">
@@ -143,7 +158,7 @@ export function UserList() {
                                 key={user.id}
                                 user={user}
                                 onDelete={handleDelete}
-                                onUpdate={handleUpdate}
+                                onOpenEditModal={openEditModal}
                             />
                         ))}
                     </ul>
@@ -159,6 +174,19 @@ export function UserList() {
                     onRequestClose={() => setIsAddModalOpen(false)}
                 />
             </Modal>
+            {editingUser && (
+                <Modal
+                    isOpen={isEditModalOpen}
+                    onRequestClose={closeEditModal}
+                    contentLabel="Editar Usuário"
+                >
+                    <EditUserForm
+                        userToEdit={editingUser}
+                        onUpdateUser={handleUpdate}
+                        onRequestClose={closeEditModal}
+                    />
+                </Modal>
+            )}
         </div>
     );
 }
