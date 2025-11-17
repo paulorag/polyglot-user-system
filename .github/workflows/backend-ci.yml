@@ -7,6 +7,7 @@ on:
         paths:
             - "api-treinamento-node/**"
             - "docker-compose.yml"
+            - '.github/workflows/backend-ci.yml'
 jobs:
     test-backend:
         runs-on: ubuntu-latest
