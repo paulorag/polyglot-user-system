@@ -7,6 +7,7 @@ on:
     paths:
       - 'api-treinamento-java/**'
       - 'docker-compose.yml'
+      - '.github/workflows/java-ci.yml'
 
 jobs:
   test-java-api:
