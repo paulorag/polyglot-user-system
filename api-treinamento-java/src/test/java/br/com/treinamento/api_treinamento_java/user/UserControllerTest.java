@@ -78,7 +78,6 @@ public class UserControllerTest {
         user.setNome("Nome Antigo");
         User usuarioSalvo = userRepository.save(user);
         Integer idSalvo = usuarioSalvo.getId();
-
         String jsonAtualizado = "{\"nome\": \"Nome Novo\"}";
 
         mockMvc.perform(
