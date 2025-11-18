@@ -2,22 +2,43 @@ const request = require("supertest");
 const app = require("./app");
 
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+
+let prisma;
 
 beforeEach(async () => {
+    prisma = new PrismaClient();
+
     await prisma.user.deleteMany({});
     await prisma.user.createMany({
         data: [
-            { id: 1, nome: "Paulo Roberto" },
-            { id: 2, nome: "Ana Carolina" },
-            { id: 3, nome: "Bruno Costa" },
+            {
+                id: 1,
+                email: "paulo@teste.com",
+                nome: "Paulo Roberto",
+                password: "senha123",
+            },
+            {
+                id: 2,
+                email: "ana@teste.com",
+                nome: "Ana Carolina",
+                password: "senha123",
+            },
+            {
+                id: 3,
+                email: "bruno@teste.com",
+                nome: "Bruno Costa",
+                password: "senha123",
+            },
         ],
     });
-    await prisma.$executeRaw`SELECT setval('"User_id_seq"', (SELECT MAX(id) FROM "User"))`;
+
+    await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"User"', 'id'), (SELECT MAX(id) FROM "User"))`;
 });
 
 afterAll(async () => {
-    await prisma.$disconnect();
+    if (prisma) {
+        await prisma.$disconnect();
+    }
 });
 
 describe("GET /status", () => {
@@ -43,9 +64,13 @@ describe("GET /users", () => {
 describe("GET /users/:id", () => {
     it("deve retornar um usuário específico e status 200", async () => {
         const response = await request(app).get("/users/1");
-
         expect(response.statusCode).toBe(200);
-        expect(response.body).toEqual({ id: 1, nome: "Paulo Roberto" });
+        expect(response.body).toEqual({
+            id: 1,
+            nome: "Paulo Roberto",
+            email: "paulo@teste.com",
+        });
+        expect(response.body).not.toHaveProperty("password");
     });
 
     it("deve retonar status 404 se o usuário não for encontrado", async () => {
@@ -56,12 +81,19 @@ describe("GET /users/:id", () => {
 
 describe("POST /users", () => {
     it("deve criar um novo usuário e retornar o objeto do usuário", async () => {
-        const novoUsuario = { nome: "Carlos Andrade" };
+        const novoUsuario = {
+            nome: "Carlos Andrade",
+            email: "carlos@teste.com",
+            password: "senhaForte123",
+        };
+
         const response = await request(app).post("/users").send(novoUsuario);
 
         expect(response.statusCode).toBe(201);
         expect(response.body).toHaveProperty("id");
         expect(response.body.nome).toBe("Carlos Andrade");
+        expect(response.body.email).toBe("carlos@teste.com");
+        expect(response.body).not.toHaveProperty("password");
     });
 
     it("deve retornar erro 400 se o nome não for fornecido", async () => {
@@ -74,7 +106,11 @@ describe("POST /users", () => {
 
 describe("PUT /users/:id", () => {
     it("deve atualizar o nome de um usuário e retorna-lo", async () => {
-        const dadosAtualizados = { nome: "Paulo Ricardo" };
+        const dadosAtualizados = {
+            nome: "Paulo Ricardo",
+            email: "paulo.ricardo@teste.com",
+            password: "novaSenha123",
+        };
         const response = await request(app)
             .put("/users/1")
             .send(dadosAtualizados);
@@ -82,6 +118,8 @@ describe("PUT /users/:id", () => {
         expect(response.statusCode).toBe(200);
         expect(response.body.id).toBe(1);
         expect(response.body.nome).toBe("Paulo Ricardo");
+        expect(response.body.email).toBe("paulo.ricardo@teste.com");
+        expect(response.body).not.toHaveProperty("password");
     });
 
     it("deve retornar 404 se o usuário não existir", async () => {
