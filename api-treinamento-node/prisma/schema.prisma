@@ -11,6 +11,8 @@ datasource db {
 
 // "Desenha" nossa tabela de Usuários
 model User {
-  id    Int     @id @default(autoincrement())
-  nome  String
+  id        Int      @id @default(autoincrement())
+  email     String   @unique 
+  nome      String
+  password  String   
 }
