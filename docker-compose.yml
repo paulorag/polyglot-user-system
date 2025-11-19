@@ -20,6 +20,7 @@ services:
                 condition: service_healthy
         environment:
             - DATABASE_URL=postgresql://docker:docker@db:5432/treinamento_api?schema=public
+            - JWT_SECRET=${JWT_SECRET}
 
     frontend:
         build: ./web-treinamento-react
