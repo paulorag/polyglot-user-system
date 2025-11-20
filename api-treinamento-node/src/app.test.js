@@ -1,14 +1,19 @@
 const request = require("supertest");
 const app = require("./app");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const { PrismaClient } = require("@prisma/client");
 
 let prisma;
+let token;
 
 beforeEach(async () => {
     prisma = new PrismaClient();
-
     await prisma.user.deleteMany({});
+
+    const hashedPassword = await bcrypt.hash("senha123", 10);
+
     await prisma.user.createMany({
         data: [
             {
@@ -33,6 +38,10 @@ beforeEach(async () => {
     });
 
     await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"User"', 'id'), (SELECT MAX(id) FROM "User"))`;
+
+    token = jwt.sign({ userId: 1 }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+    });
 });
 
 afterAll(async () => {
@@ -52,7 +61,9 @@ describe("GET /status", () => {
 
 describe("GET /users", () => {
     it("deve retornar status 200 e uma lista de usuários", async () => {
-        const response = await request(app).get("/users");
+        const response = await request(app)
+            .get("/users")
+            .set("Authorization", "Bearer " + token);
 
         expect(response.statusCode).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
@@ -63,7 +74,10 @@ describe("GET /users", () => {
 
 describe("GET /users/:id", () => {
     it("deve retornar um usuário específico e status 200", async () => {
-        const response = await request(app).get("/users/1");
+        const response = await request(app)
+            .get("/users/1")
+            .set("Authorization", "Bearer " + token);
+
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual({
             id: 1,
@@ -74,7 +88,10 @@ describe("GET /users/:id", () => {
     });
 
     it("deve retonar status 404 se o usuário não for encontrado", async () => {
-        const response = await request(app).get("/users/99");
+        const response = await request(app)
+            .get("/users/99")
+            .set("Authorization", "Bearer " + token);
+
         expect(response.statusCode).toBe(404);
     });
 });
@@ -87,7 +104,10 @@ describe("POST /users", () => {
             password: "senhaForte123",
         };
 
-        const response = await request(app).post("/users").send(novoUsuario);
+        const response = await request(app)
+            .post("/users")
+            .set("Authorization", "Bearer " + token)
+            .send(novoUsuario);
 
         expect(response.statusCode).toBe(201);
         expect(response.body).toHaveProperty("id");
@@ -97,7 +117,10 @@ describe("POST /users", () => {
     });
 
     it("deve retornar erro 400 se o nome não for fornecido", async () => {
-        const response = await request(app).post("/users").send({});
+        const response = await request(app)
+            .post("/users")
+            .set("Authorization", "Bearer " + token)
+            .send({});
 
         expect(response.statusCode).toBe(400);
         expect(response.body).toEqual({ erro: "O nome é obrigatório" });
@@ -113,6 +136,7 @@ describe("PUT /users/:id", () => {
         };
         const response = await request(app)
             .put("/users/1")
+            .set("Authorization", "Bearer " + token)
             .send(dadosAtualizados);
 
         expect(response.statusCode).toBe(200);
@@ -126,13 +150,17 @@ describe("PUT /users/:id", () => {
         const dadosAtualizados = { nome: "Usuário Fantasma" };
         const response = await request(app)
             .put("/users/99")
+            .set("Authorization", "Bearer " + token)
             .send(dadosAtualizados);
 
         expect(response.statusCode).toBe(404);
     });
 
     it("deve retornar 400 se o nome não for fornecido no corpo", async () => {
-        const response = await request(app).put("/users/1").send({});
+        const response = await request(app)
+            .put("/users/1")
+            .set("Authorization", "Bearer " + token)
+            .send({});
 
         expect(response.statusCode).toBe(400);
     });
@@ -140,15 +168,23 @@ describe("PUT /users/:id", () => {
 
 describe("DELETE /users/:id", () => {
     it("deve remover um usuário e retornar status 204", async () => {
-        const response = await request(app).delete("/users/1");
+        const response = await request(app)
+            .delete("/users/1")
+            .set("Authorization", "Bearer " + token);
+
         expect(response.statusCode).toBe(204);
 
-        const userCheckResponse = await request(app).get("/users/1");
+        const userCheckResponse = await request(app)
+            .get("/users/1")
+            .set("Authorization", "Bearer " + token);
+
         expect(userCheckResponse.statusCode).toBe(404);
     });
 
     it("deve retornar 404 se o usuário a ser deletado não existir", async () => {
-        const response = await request(app).delete("/users/99");
+        const response = await request(app)
+            .delete("/users/99")
+            .set("Authorization", "Bearer " + token);
         expect(response.statusCode).toBe(404);
     });
 });
