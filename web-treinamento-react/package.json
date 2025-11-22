@@ -10,7 +10,9 @@
         "test": "vitest"
     },
     "dependencies": {
+        "@types/nookies": "^1.1.0",
         "next": "15.5.4",
+        "nookies": "^2.5.2",
         "react": "19.1.0",
         "react-dom": "19.1.0",
         "react-hot-toast": "^2.6.0",
