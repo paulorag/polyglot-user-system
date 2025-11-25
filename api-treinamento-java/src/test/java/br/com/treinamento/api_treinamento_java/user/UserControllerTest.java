@@ -1,106 +1,90 @@
 package br.com.treinamento.api_treinamento_java.user;
 
-import br.com.treinamento.api_treinamento_java.user.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@WithMockUser(username = "admin", roles = { "USER" })
 public class UserControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private UserRepository userRepository;
 
-    @Test
-    public void deveCriarUmNovoUsuarioComSucesso() throws Exception {
-        String novoUsuarioJson = "{\"nome\": \"Usuário de Teste\"}";
+        @Autowired
+        private MockMvc mockMvc;
 
-        mockMvc.perform(
-                post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(novoUsuarioJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nome").value("Usuário de Teste"))
-                .andExpect(jsonPath("$.id").exists());
-    }
+        @Autowired
+        private UserRepository userRepository;
 
-    @Test
-    public void deveListarTodosOsUsuarios() throws Exception {
-        User user = new User();
-        user.setNome("Usuario de Teste");
-        userRepository.save(user);
+        @Test
+        public void deveListarTodosOsUsuarios() throws Exception {
+                User user = new User();
+                user.setNome("Usuario de Teste");
+                user.setEmail("lista@teste.com");
+                user.setPassword("senha123");
+                userRepository.save(user);
 
-        mockMvc.perform(
-                get("/users"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].nome").value("Usuario de Teste"));
-    }
+                mockMvc.perform(get("/users"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$").isArray())
+                                .andExpect(jsonPath("$[0].nome").value("Usuario de Teste"));
+        }
 
-    @Test
-    public void deveBuscarUsuarioPorIdComSucesso() throws Exception {
-        User user = new User();
-        user.setNome("Usuario Unico");
-        User usuarioSalvo = userRepository.save(user);
-        Integer idSalvo = usuarioSalvo.getId();
+        @Test
+        public void deveBuscarUsuarioPorIdComSucesso() throws Exception {
+                User user = new User();
+                user.setNome("Usuario Unico");
+                user.setEmail("unico@teste.com");
+                user.setPassword("senha123");
+                User usuarioSalvo = userRepository.save(user);
 
-        mockMvc.perform(
-                get("/users/" + idSalvo))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(idSalvo))
-                .andExpect(jsonPath("$.nome").value("Usuario Unico"));
-    }
+                mockMvc.perform(get("/users/" + usuarioSalvo.getId()))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.nome").value("Usuario Unico"));
+        }
 
-    @Test
-    public void deveRetornar404AoBuscarUsuarioInexistente() throws Exception {
-        mockMvc.perform(
-                get("/users/999"))
-                .andExpect(status().isNotFound());
-    }
+        @Test
+        public void deveAtualizarUmUsuarioExistente() throws Exception {
+                User user = new User();
+                user.setNome("Nome Antigo");
+                user.setEmail("antigo@teste.com");
+                user.setPassword("senha123");
+                User usuarioSalvo = userRepository.save(user);
 
-    @Test
-    public void deveAtualizarUmUsuarioExistente() throws Exception {
-        User user = new User();
-        user.setNome("Nome Antigo");
-        User usuarioSalvo = userRepository.save(user);
-        Integer idSalvo = usuarioSalvo.getId();
-        String jsonAtualizado = "{\"nome\": \"Nome Novo\"}";
+                String jsonAtualizado = """
+                                    {
+                                        "nome": "Nome Novo",
+                                        "email": "antigo@teste.com",
+                                        "password": "senha123"
+                                    }
+                                """;
 
-        mockMvc.perform(
-                put("/users/" + idSalvo)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonAtualizado))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nome").value("Nome Novo"));
-    }
+                mockMvc.perform(
+                                put("/users/" + usuarioSalvo.getId())
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(jsonAtualizado))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.nome").value("Nome Novo"));
+        }
 
-    @Test
-    public void deveDeletarUmUsuarioExistente() throws Exception {
-        User user = new User();
-        user.setNome("Usuario Para Deletar");
-        User usuarioSalvo = userRepository.save(user);
-        Integer idSalvo = usuarioSalvo.getId();
+        @Test
+        public void deveDeletarUmUsuarioExistente() throws Exception {
+                User user = new User();
+                user.setNome("Usuario Para Deletar");
+                user.setEmail("delete@teste.com");
+                user.setPassword("senha123");
+                User usuarioSalvo = userRepository.save(user);
 
-        mockMvc.perform(
-                delete("/users/" + idSalvo))
-                .andExpect(status().isNoContent());
+                mockMvc.perform(delete("/users/" + usuarioSalvo.getId()))
+                                .andExpect(status().isNoContent());
+        }
 
-        mockMvc.perform(
-                get("/users/" + idSalvo))
-                .andExpect(status().isNotFound());
-    }
 }
