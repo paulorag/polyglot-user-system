@@ -1,114 +1,123 @@
-# 🚀 Treinamento Full Stack: Sistema de Usuários (Polyglot Architecture)
+# 🚀 Polyglot User System (Full Stack Monorepo)
 
-![Status do Projeto](https://img.shields.io/badge/status-concluído-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
+[![Status](https://img.shields.io/badge/status-complete-green)]()
+[![License](https://img.shields.io/badge/license-MIT-blue)]()
+[![Deploy](https://img.shields.io/badge/Deploy-Vercel-000?logo=vercel)](https://polyglot-user-system.vercel.app/)
 
-Um projeto Full Stack completo desenvolvido com uma arquitetura de microsserviços e monorepo. O objetivo principal foi construir uma aplicação resiliente onde o Frontend é agnóstico ao Backend, comunicando-se transparentemente com APIs desenvolvidas em ecossistemas diferentes (**Node.js** e **Java/Spring Boot**), ambas compartilhando o mesmo banco de dados e regras de negócio.
+[Leia este documento em Português](README-pt.md)
 
-## 🏗️ Arquitetura do Projeto
+A complete Full Stack project developed with a **microservices architecture** within a **monorepo**. The main goal was to build a resilient application where the Frontend is **agnostic** to the Backend, communicating transparently with APIs developed in different ecosystems (**Node.js** and **Java/Spring Boot**), both sharing the same database and business rules.
 
-O projeto está organizado como um **Monorepo** contendo:
-
--   **Frontend:** Aplicação SPA construída com **React**, **Next.js** e **Tailwind CSS**.
--   **Backend A (Node.js):** API RESTful com **Express** e **Prisma ORM**.
--   **Backend B (Java):** API RESTful com **Spring Boot** e **Spring Data JPA**.
--   **Banco de Dados:** **PostgreSQL** containerizado.
--   **DevOps:** Orquestração completa com **Docker Compose** e pipelines de CI/CD via **GitHub Actions**.
+> **⚠️ Deployment Note (Render Free Tier):**
+> The Backend API (Node.js) is hosted on **Render's free tier**.
+> The first request (login/signup) **may take up to 60 seconds** to wake up the server. Please be patient on the first interaction.
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🏗️ Project Architecture
+
+The project is organized as a **Monorepo** containing:
+
+-   **Frontend:** SPA application built with **React**, **Next.js**, and **Tailwind CSS**.
+-   **Backend A (Node.js):** RESTful API with **Express** and **Prisma ORM**.
+-   **Backend B (Java):** RESTful API with **Spring Boot** and **Spring Data JPA**.
+-   **Database:** Containerized **PostgreSQL**.
+-   **DevOps:** Complete orchestration with **Docker Compose** and CI/CD pipelines via **GitHub Actions**.
+
+---
+
+## 🛠️ Tech Stack
 
 ### 🎨 Frontend (`web-treinamento-react`)
 
 -   **React 18** & **Next.js 14+** (App Router)
 -   **TypeScript**
 -   **Tailwind CSS**
--   **React Hot Toast** (Notificações)
--   **Nookies** (Gerenciamento de Cookies)
--   **Vitest** (Testes Unitários)
+-   **React Hot Toast** (Notifications)
+-   **Nookies** (Cookie Management)
+-   **Vitest** (Unit Testing)
 
 ### 🟢 Backend Node.js (`api-treinamento-node`)
 
 -   **Node.js** & **Express**
 -   **Prisma ORM**
--   **Jest** & **Supertest** (TDD & Testes de Integração)
--   **JWT** & **BCrypt** (Autenticação & Segurança)
+-   **Jest** & **Supertest** (TDD & Integration Testing)
+-   **JWT** & **BCrypt** (Authentication & Security)
 
 ### ☕ Backend Java (`api-treinamento-java`)
 
 -   **Java 17** & **Spring Boot 3**
 -   **Spring Data JPA** (Hibernate)
--   **Spring Security** (Autenticação Stateless com JWT)
--   **JUnit 5** & **MockMvc** (Testes de Integração)
+-   **Spring Security** (Stateless Authentication with JWT)
+-   **JUnit 5** & **MockMvc** (Integration Testing)
 -   **Lombok**
 
 ### ⚙️ DevOps & Infra
 
 -   **Docker** & **Docker Compose**
--   **GitHub Actions** (Workflows de CI independentes para cada serviço)
+-   **GitHub Actions** (Independent CI workflows for each service)
 
 ---
 
-## 🚀 Como Rodar o Projeto
+## 🚀 How to Run Locally
 
-Graças ao Docker, você pode rodar toda a stack (Frontend + Backend + Banco) com um único comando.
+Thanks to Docker, you can run the entire stack (Frontend + Backend + Database) with a single command.
 
-### Pré-requisitos
+### Prerequisites
 
--   Docker e Docker Compose instalados.
+-   Docker and Docker Compose installed.
 
-### Passo a Passo
+### Step by Step
 
-1.  **Clone o repositório:**
+1.  **Clone the repository:**
 
     ```bash
-    git clone [https://github.com/SEU_USUARIO/treinamento-fullstack.git](https://github.com/SEU_USUARIO/treinamento-fullstack.git)
+    git clone [https://github.com/paulorag/treinamento-fullstack.git](https://github.com/paulorag/treinamento-fullstack.git)
     cd treinamento-fullstack
     ```
 
-2.  **Configure as Variáveis de Ambiente:**
-    Crie um arquivo `.env` na raiz do projeto para o Docker Compose:
+2.  **Configure Environment Variables:**
+    Create a `.env` file in the root of the project for Docker Compose:
 
     ```env
-    JWT_SECRET="sua_chave_secreta_de_desenvolvimento"
+    JWT_SECRET="your_development_secret_key"
     ```
 
-3.  **Inicie a Aplicação:**
-    Execute o comando de orquestração:
+3.  **Start the Application:**
+    Run the orchestration command:
 
     ```bash
     docker compose up --build -d
     ```
 
-4.  **Acesse:**
+4.  **Access:**
     -   **Frontend:** `http://localhost:3000`
     -   **API (Node.js):** `http://localhost:3001`
-    -   **Banco de Dados:** `localhost:5433`
+    -   **Database:** `localhost:5433`
 
-> **Nota:** O frontend é configurado por padrão para se comunicar com a API Node.js. Para trocar para a API Java, altere a variável `NEXT_PUBLIC_API_URL` no `.env.local` do frontend ou ajuste o mapeamento de portas no `docker-compose.yml` (a API Java roda internamente na porta 8080).
-
----
-
-## ✅ Funcionalidades
-
--   [x] **CRUD Completo de Usuários** (Criar, Ler, Atualizar, Deletar).
--   [x] **Autenticação JWT** (Login e Registro).
--   [x] **Proteção de Rotas** (Middleware no Node e Filter no Spring).
--   [x] **Interface Reativa** com Feedback Visual (Loading/Toasts).
--   [x] **Modais** para formulários de criação e edição.
--   [x] **Persistência de Dados** com PostgreSQL.
+> **Note:** The frontend is configured by default to communicate with the Node.js API. To switch to the Java API, change the `NEXT_PUBLIC_API_URL` variable in the frontend's `.env.local` or adjust the port mapping in `docker-compose.yml` (the Java API runs internally on port 8080).
 
 ---
 
-## 🧪 Testes
+## ✅ Features
 
-O projeto possui alta cobertura de testes automatizados.
-
--   **Testar Backend Node:** `cd api-treinamento-node && npm test`
--   **Testar Backend Java:** `cd api-treinamento-java && mvn test`
--   **Testar Frontend:** `cd web-treinamento-react && npm test`
+-   [x] **Complete User CRUD** (Create, Read, Update, Delete).
+-   [x] **JWT Authentication** (Login and Register).
+-   [x] **Route Protection** (Middleware in Node and Filter in Spring).
+-   [x] **Reactive Interface** with Visual Feedback (Loading/Toasts).
+-   [x] **Modals** for creation and editing forms.
+-   [x] **Data Persistence** with PostgreSQL.
 
 ---
 
-Desenvolvido como parte de um treinamento intensivo de Engenharia de Software Full Stack.
+## 🧪 Testing
+
+The project has high automated test coverage.
+
+-   **Test Backend Node:** `cd api-treinamento-node && npm test`
+-   **Test Backend Java:** `cd api-treinamento-java && mvn test`
+-   **Test Frontend:** `cd web-treinamento-react && npm test`
+
+---
+
+Developed as part of an intensive Full Stack Software Engineering training.
